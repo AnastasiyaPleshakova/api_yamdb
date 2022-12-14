@@ -1,9 +1,11 @@
 from django.db import models
 
+from .validators import validate_year
+
 
 class Genre(models.Model):
-    name = models.CharField('Жанр', max_length=100)
-    slug = models.SlugField(unique=True, max_length=40)
+    name = models.CharField('Жанр', max_length=200)
+    slug = models.SlugField(unique=True, max_length=50)
 
     class Meta:
         verbose_name = 'Жанр'
@@ -14,8 +16,8 @@ class Genre(models.Model):
 
 
 class Category(models.Model):
-    name = models.CharField('Категория', max_length=100)
-    slug = models.SlugField(unique=True, max_length=40)
+    name = models.CharField('Категория', max_length=200)
+    slug = models.SlugField(unique=True, max_length=50)
 
     class Meta:
         verbose_name = 'Категория'
@@ -26,7 +28,24 @@ class Category(models.Model):
 
 
 class Title(models.Model):
-    name = models.CharField('Произведение', max_length=100)
+    name = models.CharField('Произведение', max_length=200)
+    year = models.IntegerField(
+        'Год выпуска',
+        validators=[validate_year],
+        null=True,
+        blank=True,
+    )
+    description = models.TextField(
+        'Описание',
+        null=True,
+        blank=True
+    )
+    rating = models.IntegerField(
+        'Рейтинг',
+        null=True,
+        default=None,
+        blank=True,
+    )
     category = models.ForeignKey(
         Category,
         verbose_name='Категория',

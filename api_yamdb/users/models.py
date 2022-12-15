@@ -8,5 +8,8 @@ class User(AbstractUser):
         ('moderator', 'Модератор'),
         ('user', 'Пользователь'),
     )
-    role = models.CharField('Роль', max_length=20, choices=ROLES, default='user')
+    role = models.CharField(
+        'Роль', max_length=20,
+        choices=ROLES, default='user'
+    )
     bio = models.TextField('Биография', null=True, blank=True)

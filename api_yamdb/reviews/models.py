@@ -4,7 +4,7 @@ from .validators import validate_year
 
 
 class Genre(models.Model):
-    name = models.CharField('Жанр', max_length=200)
+    name = models.TextField('Жанр')
     slug = models.SlugField(unique=True, max_length=50)
 
     class Meta:
@@ -16,7 +16,7 @@ class Genre(models.Model):
 
 
 class Category(models.Model):
-    name = models.CharField('Категория', max_length=200)
+    name = models.TextField('Категория')
     slug = models.SlugField(unique=True, max_length=50)
 
     class Meta:
@@ -28,7 +28,7 @@ class Category(models.Model):
 
 
 class Title(models.Model):
-    name = models.CharField('Произведение', max_length=200)
+    name = models.TextField('Произведение')
     year = models.IntegerField(
         'Год выпуска',
         validators=[validate_year],

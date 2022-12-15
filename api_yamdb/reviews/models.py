@@ -1,6 +1,9 @@
 from django.db import models
+from django.core.validators import MaxValueValidator, MinValueValidator
 
 from .validators import validate_year
+
+from users.models import User
 
 
 class Genre(models.Model):
@@ -86,3 +89,67 @@ class GenreTitle(models.Model):
             f'Произведение:{self.title[:30]},'
             f'\nЖанр:{self.genre[:30]}'
         )
+
+
+class Review(models.Model):
+    text = models.TextField(
+        'Текст отзыва',
+        null=True,
+        blank=True
+    )
+    pub_date = models.DateTimeField(
+        'Дата публикации',
+        auto_now_add=True
+    )
+    score = models.IntegerField(
+        'Оценка',
+        validators=[MinValueValidator(1), MaxValueValidator(10)]
+    )
+    title = models.ForeignKey(
+        Title,
+        verbose_name='Произведение',
+        on_delete=models.CASCADE,
+        related_name='reviews'
+    )
+    author = models.ForeignKey(
+        User,
+        verbose_name='Автор',
+        on_delete=models.CASCADE,
+        related_name='reviews'
+    )
+
+    class Meta:
+        verbose_name = 'Отзыв'
+        verbose_name_plural = 'Отзывы'
+
+    def __str__(self):
+        return self.text[:30]
+
+
+class Comment(models.Model):
+    text = models.TextField(
+        'Текст комментария'
+    )
+    pub_date = models.DateTimeField(
+        'Дата публикации',
+        auto_now_add=True
+    )
+    review = models.ForeignKey(
+        Review,
+        verbose_name='Отзыв',
+        on_delete=models.CASCADE,
+        related_name='comments'
+    )
+    author = models.ForeignKey(
+        User,
+        verbose_name='Автор',
+        on_delete=models.CASCADE,
+        related_name='comments'
+    )
+
+    class Meta:
+        verbose_name = 'Комментарий'
+        verbose_name_plural = 'Комментарии'
+
+    def __str__(self):
+        return self.text[:30]

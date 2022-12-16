@@ -6,8 +6,10 @@ from .serializers import (
     CategorySerializer,
     GenreSerializer,
     TitleSerializer,
+    ReviewSerializer,
+    CommentSerializer
 )
-from reviews.models import Category, Genre, Title
+from reviews.models import Category, Genre, Title, Review, Comment
 
 
 class TitleViewSet(viewsets.ModelViewSet):
@@ -31,3 +33,13 @@ class GenreViewSet(viewsets.ModelViewSet):
     filter_backends = (filters.SearchFilter, )
     search_fields = ('name',)
     lookup_field = 'slug'
+
+
+class ReviewViewSet(viewsets.ModelViewSet):
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer

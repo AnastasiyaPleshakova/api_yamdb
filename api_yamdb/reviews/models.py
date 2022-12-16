@@ -35,8 +35,6 @@ class Title(models.Model):
     year = models.IntegerField(
         'Год выпуска',
         validators=[validate_year],
-        null=True,
-        blank=True,
     )
     description = models.TextField(
         'Описание',

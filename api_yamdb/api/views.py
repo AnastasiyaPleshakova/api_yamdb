@@ -5,7 +5,8 @@ from .filters import TitleFilter
 from .serializers import (
     CategorySerializer,
     GenreSerializer,
-    TitleSerializer,
+    TitleListRetrieveSerializer,
+    TitleSerializer
     ReviewSerializer,
     CommentSerializer
 )
@@ -14,9 +15,13 @@ from reviews.models import Category, Genre, Title, Review, Comment
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
-    serializer_class = TitleSerializer
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
+
+    def get_serializer_class(self):
+        if self.action in ('list', 'retrieve'):
+            return TitleListRetrieveSerializer
+        return TitleSerializer
 
 
 class CategoryViewSet(viewsets.ModelViewSet):

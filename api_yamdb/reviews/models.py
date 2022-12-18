@@ -41,12 +41,6 @@ class Title(models.Model):
         null=True,
         blank=True
     )
-    rating = models.IntegerField(
-        'Рейтинг',
-        null=True,
-        default=None,
-        blank=True,
-    )
     category = models.ForeignKey(
         Category,
         verbose_name='Категория',
@@ -119,6 +113,10 @@ class Review(models.Model):
     class Meta:
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
+        constraints = [
+            models.UniqueConstraint(fields=['title', 'author'],
+                                    name='unique_review')
+        ]
 
     def __str__(self):
         return self.text[:30]

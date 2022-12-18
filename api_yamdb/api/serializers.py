@@ -1,6 +1,8 @@
+from django.db.models import Avg
+
 from rest_framework import serializers
 
-from reviews.models import Category, Genre, Title
+from reviews.models import Category, Genre, Title, Review, Comment
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -27,16 +29,55 @@ class TitleSerializer(serializers.ModelSerializer):
         many=True,
         slug_field='slug'
     )
+    rating = serializers.SerializerMethodField()
 
     class Meta:
         model = Title
-        fields = '__all__'
+        fields = ('id', 'name', 'year', 'description', 'category', 'genre',
+                  'rating')
+
+    def get_rating(self, obj):
+        return obj.reviews.all().aggregate(Avg('score'))['score__avg']
 
 
 class TitleListRetrieveSerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
     genre = GenreSerializer(read_only=True, many=True)
+    rating = serializers.SerializerMethodField()
 
     class Meta:
         model = Title
-        fields = '__all__'
+        fields = ('id', 'name', 'year', 'description', 'category', 'genre',
+                  'rating')
+
+    def get_rating(self, obj):
+        return obj.reviews.all().aggregate(Avg('score'))['score__avg']
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    author = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field='username'
+    )
+
+    class Meta:
+        model = Review
+        fields = ('id', 'text', 'author', 'score', 'pub_date')
+
+    def validate(self, data):
+        if (self.context['request'].method == 'POST' and Review.objects.filter(
+                author=self.context['request'].user)):
+            raise serializers.ValidationError(
+                'На одно произведение можно оставить лишь один отзыв!')
+        return data
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    author = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field='username'
+    )
+
+    class Meta:
+        model = Comment
+        fields = ('id', 'text', 'author', 'pub_date')

@@ -1,4 +1,5 @@
 from django.contrib.auth.models import AbstractUser
+from django.core import validators
 from django.db import models
 
 
@@ -10,6 +11,7 @@ class User(AbstractUser):
     )
     email = models.EmailField(
         'Электронная почта',
+        validators=[validators.validate_email],
         unique=True,
     )
     username = models.CharField(
@@ -22,3 +24,6 @@ class User(AbstractUser):
         choices=ROLES, default='user'
     )
     bio = models.TextField('Биография', null=True, blank=True)
+
+    def __str__(self):
+        return self.username

@@ -18,6 +18,8 @@ class GenreSerializer(serializers.ModelSerializer):
         model = Genre
         exclude = ('id',)
 
+from users.models import User
+
 
 class TitleSerializer(serializers.ModelSerializer):
     category = serializers.SlugRelatedField(
@@ -83,3 +85,21 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = ('id', 'text', 'author', 'pub_date')
+
+        model = Genre
+        exclude = ('id',)
+
+
+class SignUpSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(required=True)
+    email = serializers.CharField(required=True)
+
+    class Meta:
+        model = User
+        fields = ('username', 'email')
+
+
+class GetTokenSerializer(serializers.Serializer):
+    token = serializers.CharField(required=False)
+    confirmation_code = serializers.CharField(required=False)
+    username = serializers.CharField(required=True)

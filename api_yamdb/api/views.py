@@ -1,10 +1,12 @@
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, viewsets
-from rest_framework_simplejwt.tokens import Token
+from rest_framework import filters, viewsets, mixins, generics, status
+from rest_framework_simplejwt.tokens import AccessToken
+from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
-
-from rest_framework import status
+from django.shortcuts import get_object_or_404
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
+import datetime
 
 from .filters import TitleFilter
 from .serializers import (
@@ -17,8 +19,6 @@ from .serializers import (
 from .permissions import IsAnonym
 from reviews.models import Category, Genre, Title
 from users.models import User
-
-from random import randint
 
 
 class TitleViewSet(viewsets.ModelViewSet):
@@ -44,38 +44,33 @@ class GenreViewSet(viewsets.ModelViewSet):
     lookup_field = 'slug'
 
 
-def send_message():
-    global confirmation_code
-    confirmation_code = randint(1000, 9999)
-    send_mail(
-        'Подтверждение email',
-        f'Ваш код подтверждения: {confirmation_code}',
-        'from@example.com',  # Это поле "От кого"
-        ['to@exmaple.com'],  # Это поле "Кому"
-        fail_silently=True,  # Сообщать об ошибках
-    )
-    return confirmation_code
-
-
-class SignupViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.all()
-    serializer_class = SignUpSerializer
-    permission_classes = [IsAnonym, ]
-
-    def perform_create(self, serializer):
-        send_message()
+@api_view(['POST'])
+@permission_classes([IsAnonym])
+def signup(request):
+    serializer = SignUpSerializer(data=request.data)
+    if serializer.is_valid(raise_exception=True):
         serializer.save()
+        user = get_object_or_404(User, username=serializer.validated_data["username"])
+        confirmation_code = default_token_generator.make_token(user)
+        send_mail(
+            'Подтверждение email',
+            f'Ваш код подтверждения: {confirmation_code}',
+            'from@example.com',  # Это поле "От кого"
+            ['to@exmaple.com'],  # Это поле "Кому"
+            fail_silently=True,  # Сообщать об ошибках
+        )
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-def get_tokens_for_user(user):
-    token = Token.for_user(user)
-    print(token)
-    return {
-        'token': str(token),
-    }
-
-
-class GetTokenViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.all()
-    serializer_class = GetTokenSerializer
-    permission_classes = [IsAnonym, ]
+@api_view(['POST'])
+@permission_classes([IsAnonym])
+def get_token_for_user(request):
+    serializer = GetTokenSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    user = get_object_or_404(
+        User, username=serializer.validated_data["username"])
+    if default_token_generator.check_token(user, serializer.validated_data["confirmation_code"]):
+        token = AccessToken.for_user(user)
+        return Response({"token": str(token)}, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -86,9 +86,6 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields = ('id', 'text', 'author', 'pub_date')
 
-        model = Genre
-        exclude = ('id',)
-
 
 class SignUpSerializer(serializers.ModelSerializer):
     username = serializers.CharField(required=True)

@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from django.contrib.auth.tokens import default_token_generator
 
 from .filters import TitleFilter
-from .permissions import IsAllowAny, IsAnonymOrCanCorrect
+from .permissions import IsAllowAny, IsAnonymOrCanCorrect, IsAdminOrReadOnly
 from .serializers import (
     CommentSerializer,
     CategorySerializer,
@@ -23,7 +23,7 @@ from reviews.models import Category, Genre, Title, Review, Comment
 from users.models import User
 
 
-@permission_classes([IsAnonymOrCanCorrect])
+@permission_classes([IsAdminOrReadOnly])
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     filter_backends = (DjangoFilterBackend,)
@@ -35,7 +35,7 @@ class TitleViewSet(viewsets.ModelViewSet):
         return TitleSerializer
 
 
-@permission_classes([IsAnonymOrCanCorrect])
+@permission_classes([IsAdminOrReadOnly])
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
@@ -44,7 +44,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
     lookup_field = 'slug'
 
 
-@permission_classes([IsAnonymOrCanCorrect])
+@permission_classes([IsAdminOrReadOnly])
 class GenreViewSet(viewsets.ModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer

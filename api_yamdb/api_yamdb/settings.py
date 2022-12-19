@@ -1,11 +1,15 @@
 from pathlib import Path
 from datetime import timedelta
-
+from dotenv import load_dotenv
+from os.path import join, dirname
 import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'p&l%385148kslhtyn^##a1)ilz@4zqj=rq&agdol^##zgl9(vs'
+dotenv_path = join(dirname(__file__), 'keys.env')
+load_dotenv(dotenv_path)
+
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 DEBUG = True
 

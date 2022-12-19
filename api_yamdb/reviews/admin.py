@@ -1,8 +1,9 @@
 from django.contrib import admin
 
-from .models import Genre, Category, Title, Review, Comment
+from .models import Genre, GenreTitle, Category, Title, Review, Comment
 
 
+@admin.register(Title)
 class TitleAdmin(admin.ModelAdmin):
     list_display = ('pk', 'name', 'category', 'year',)
     list_filter = ('category',)
@@ -11,6 +12,7 @@ class TitleAdmin(admin.ModelAdmin):
     empty_value_display = '-пусто-'
 
 
+@admin.register(Genre)
 class GenreAdmin(admin.ModelAdmin):
     list_display = ('pk', 'name', 'slug')
     list_filter = ('name',)
@@ -19,6 +21,7 @@ class GenreAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('name',)}
 
 
+@admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ('pk', 'name', 'slug')
     list_filter = ('name',)
@@ -27,6 +30,7 @@ class CategoryAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('name',)}
 
 
+@admin.register(Review)
 class ReviewAdmin(admin.ModelAdmin):
     list_display = ('pk', 'text', 'pub_date', 'score', 'title', 'author')
     list_filter = ('pub_date',)
@@ -34,6 +38,7 @@ class ReviewAdmin(admin.ModelAdmin):
     empty_value_display = '-пусто-'
 
 
+@admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
     list_display = ('pk', 'text', 'pub_date', 'review', 'author')
     list_filter = ('pub_date',)
@@ -41,8 +46,6 @@ class CommentAdmin(admin.ModelAdmin):
     empty_value_display = '-пусто-'
 
 
-admin.site.register(Genre, GenreAdmin)
-admin.site.register(Category, CategoryAdmin)
-admin.site.register(Title, TitleAdmin)
-admin.site.register(Review, ReviewAdmin)
-admin.site.register(Comment, CommentAdmin)
+@admin.register(GenreTitle)
+class GenreTitleAdmin(admin.ModelAdmin):
+    list_display = ('pk', 'title', 'genre')

@@ -1,33 +1,43 @@
 from django.core.mail import send_mail
+from django.contrib.auth.tokens import default_token_generator
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, viewsets, status
-from rest_framework_simplejwt.tokens import AccessToken
-from rest_framework.decorators import api_view, permission_classes, action
+from rest_framework import filters, mixins, status, viewsets
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
-from django.contrib.auth.tokens import default_token_generator
+from rest_framework_simplejwt.tokens import AccessToken
+
 
 from .filters import TitleFilter
 from .permissions import (
+    IsAdmin,
+    IsAdminOrReadOnly,
     IsAllowAny,
     IsAnonymOrCanCorrect,
-    IsAdminOrReadOnly,
-    IsAdmin,
     IsUser,
 )
 from .serializers import (
-    CommentSerializer,
     CategorySerializer,
+    CommentSerializer,
     GenreSerializer,
     GetTokenSerializer,
     ReviewSerializer,
+    SignUpSerializer,
     TitleListRetrieveSerializer,
     TitleSerializer,
-    SignUpSerializer,
     UsersSerializer,
 )
-from reviews.models import Category, Genre, Title, Review, Comment
+from reviews.models import Category, Comment, Genre, Review, Title
 from users.models import User
+
+
+class CreateDestroyList(
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet,
+):
+    pass
 
 
 @permission_classes([IsAdminOrReadOnly])
@@ -43,7 +53,7 @@ class TitleViewSet(viewsets.ModelViewSet):
 
 
 @permission_classes([IsAdminOrReadOnly])
-class CategoryViewSet(viewsets.ModelViewSet):
+class CategoryViewSet(CreateDestroyList):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     filter_backends = (filters.SearchFilter, )
@@ -52,7 +62,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
 
 
 @permission_classes([IsAdminOrReadOnly])
-class GenreViewSet(viewsets.ModelViewSet):
+class GenreViewSet(CreateDestroyList):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     filter_backends = (filters.SearchFilter, )

@@ -114,11 +114,10 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-   'ACCESS_TOKEN_LIFETIME': timedelta(days=10),
-   'AUTH_HEADER_TYPES': ('Bearer',),
-   'TOKEN_TYPE_CLAIM': 'token_type',
-   'TOKEN_USER_CLASS': 'rest_framework_simplejwt.models.TokenUser',
-
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=10),
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'TOKEN_TYPE_CLAIM': 'token_type',
+    'TOKEN_USER_CLASS': 'rest_framework_simplejwt.models.TokenUser',
 }
 
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'

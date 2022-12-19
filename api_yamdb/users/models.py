@@ -11,6 +11,7 @@ class User(AbstractUser):
     )
     email = models.EmailField(
         'Электронная почта',
+        max_length=254,
         validators=[validators.validate_email],
         unique=True,
     )

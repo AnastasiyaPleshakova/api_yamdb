@@ -2,14 +2,18 @@ from django.core.management.base import BaseCommand
 
 import csv
 
-from reviews.models import *
+from reviews.models import Category, Comment, Genre, GenreTitle, Title, Review
+from users.models import User
 
 
 class Command(BaseCommand):
     help = 'Загрузка данных из .csv файлов'
 
     def _load_user(self):
-        with open('D:/Dev_v4/api_yamdb/api_yamdb/static/data/users.csv', encoding='utf-8') as csvfile:
+        with open(
+                'D:/Dev_v4/api_yamdb/api_yamdb/static/data/users.csv',
+                encoding='utf-8'
+        ) as csvfile:
             reader = csv.DictReader(csvfile)
             object_list = []
             for row in reader:
@@ -18,7 +22,10 @@ class Command(BaseCommand):
         self.stdout.write('Data for the User table is loaded!')
 
     def _load_category(self):
-        with open('D:/Dev_v4/api_yamdb/api_yamdb/static/data/category.csv', encoding='utf-8') as csvfile:
+        with open(
+                'D:/Dev_v4/api_yamdb/api_yamdb/static/data/category.csv',
+                encoding='utf-8'
+        ) as csvfile:
             reader = csv.DictReader(csvfile)
             object_list = []
             for row in reader:
@@ -27,7 +34,10 @@ class Command(BaseCommand):
         self.stdout.write('Data for the Category table is loaded!')
 
     def _load_genre(self):
-        with open('D:/Dev_v4/api_yamdb/api_yamdb/static/data/genre.csv', encoding='utf-8') as csvfile:
+        with open(
+                'D:/Dev_v4/api_yamdb/api_yamdb/static/data/genre.csv',
+                encoding='utf-8'
+        ) as csvfile:
             reader = csv.DictReader(csvfile)
             object_list = []
             for row in reader:
@@ -36,7 +46,10 @@ class Command(BaseCommand):
         self.stdout.write('Data for the Genre table is loaded!')
 
     def _load_title(self):
-        with open('D:/Dev_v4/api_yamdb/api_yamdb/static/data/titles.csv', encoding='utf-8') as csvfile:
+        with open(
+                'D:/Dev_v4/api_yamdb/api_yamdb/static/data/titles.csv',
+                encoding='utf-8'
+        ) as csvfile:
             reader = csv.DictReader(csvfile)
             object_list = []
             for row in reader:
@@ -50,7 +63,10 @@ class Command(BaseCommand):
         self.stdout.write('Data for the Title table is loaded!')
 
     def _load_genretitle(self):
-        with open('D:/Dev_v4/api_yamdb/api_yamdb/static/data/genre_title.csv', encoding='utf-8') as csvfile:
+        with open(
+                'D:/Dev_v4/api_yamdb/api_yamdb/static/data/genre_title.csv',
+                encoding='utf-8'
+        ) as csvfile:
             reader = csv.DictReader(csvfile)
             object_list = []
             for row in reader:
@@ -63,7 +79,10 @@ class Command(BaseCommand):
         self.stdout.write('Data for the GenreTitle table is loaded!')
 
     def _load_review(self):
-        with open('D:/Dev_v4/api_yamdb/api_yamdb/static/data/review.csv', encoding='utf-8') as csvfile:
+        with open(
+                'D:/Dev_v4/api_yamdb/api_yamdb/static/data/review.csv',
+                encoding='utf-8'
+        ) as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
                 data = Review(
@@ -75,11 +94,16 @@ class Command(BaseCommand):
                     pub_date=row['pub_date'],
                 )
                 data.save()
-                Review.objects.filter(pk=row['id']).update(pub_date=row['pub_date'])
+                Review.objects.filter(
+                    pk=row['id']).update(pub_date=row['pub_date']
+                                         )
         self.stdout.write('Data for the Review table is loaded!')
 
     def _load_comment(self):
-        with open('D:/Dev_v4/api_yamdb/api_yamdb/static/data/comments.csv', encoding='utf-8') as csvfile:
+        with open(
+                'D:/Dev_v4/api_yamdb/api_yamdb/static/data/comments.csv',
+                encoding='utf-8'
+        ) as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
                 data = Comment(
@@ -90,7 +114,9 @@ class Command(BaseCommand):
                     pub_date=row['pub_date'],
                 )
                 data.save()
-                Comment.objects.filter(pk=row['id']).update(pub_date=row['pub_date'])
+                Comment.objects.filter(
+                    pk=row['id']).update(pub_date=row['pub_date']
+                                         )
         self.stdout.write('Data for the Comment table is loaded!')
 
     def handle(self, *args, **options):

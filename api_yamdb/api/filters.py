@@ -4,9 +4,9 @@ from reviews.models import Title
 
 
 class TitleFilter(django_filters.FilterSet):
+    name = django_filters.CharFilter(field_name='nsme')
     category = django_filters.CharFilter(field_name='category__slug',)
     genre = django_filters.CharFilter(field_name='genre__slug',)
-    year = django_filters.RangeFilter()
 
     class Meta:
         model = Title

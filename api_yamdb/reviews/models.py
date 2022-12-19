@@ -7,7 +7,7 @@ from users.models import User
 
 
 class Genre(models.Model):
-    name = models.TextField('Жанр')
+    name = models.CharField('Жанр', max_length=256)
     slug = models.SlugField(unique=True, max_length=50)
 
     class Meta:
@@ -19,7 +19,7 @@ class Genre(models.Model):
 
 
 class Category(models.Model):
-    name = models.TextField('Категория')
+    name = models.TextField('Категория', max_length=256)
     slug = models.SlugField(unique=True, max_length=50)
 
     class Meta:
@@ -31,7 +31,7 @@ class Category(models.Model):
 
 
 class Title(models.Model):
-    name = models.TextField('Произведение')
+    name = models.TextField('Произведение', max_length=256)
     year = models.IntegerField(
         'Год выпуска',
         validators=[validate_year],

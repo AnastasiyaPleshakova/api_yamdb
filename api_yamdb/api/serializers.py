@@ -4,6 +4,8 @@ from rest_framework.validators import UniqueValidator
 
 from reviews.models import Category, Comment, Genre, Review, Title
 from users.models import User
+from django.contrib.auth.validators import UnicodeUsernameValidator
+import re
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -88,6 +90,9 @@ class CommentSerializer(serializers.ModelSerializer):
 
 class UsersSerializer(serializers.ModelSerializer):
     # password = serializers.CharField(required=False)
+    username = serializers.CharField(
+        max_length=150,
+        validators=[UnicodeUsernameValidator()],)
 
     class Meta:
         model = User
@@ -98,16 +103,24 @@ class UsersSerializer(serializers.ModelSerializer):
 class SignUpSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
         required=True,
-        validators=[UniqueValidator(queryset=User.objects.all())],
+        validators=[UniqueValidator(queryset=User.objects.all()), UnicodeUsernameValidator()],
+        max_length=150,
     )
     email = serializers.CharField(
         required=True,
         validators=[UniqueValidator(queryset=User.objects.all())],
+        max_length=254,
     )
 
     class Meta:
         model = User
         fields = ('username', 'email')
+
+    def validate_username(self, value):
+        if value == 'me':
+            raise serializers.ValidationError(
+                "Нельзя использовать 'me' в качестве username")
+        return value
 
 
 class GetTokenSerializer(serializers.Serializer):

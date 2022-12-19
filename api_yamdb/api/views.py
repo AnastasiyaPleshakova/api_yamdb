@@ -4,7 +4,6 @@ from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, mixins, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
-from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 
@@ -18,7 +17,7 @@ from .permissions import (
     IsUser,
 )
 from .serializers import (
-    CommentSerializer
+    CommentSerializer,
     CategorySerializer,
     CommentSerializer,
     GenreSerializer,
@@ -86,10 +85,11 @@ class ReviewViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         title_id = self.kwargs.get('title_id')
         title = get_object_or_404(Title, id=title_id)
-        return title.reviews.all()  
-      
-      
-  class CommentViewSet(viewsets.ModelViewSet):
+        return title.reviews.all()
+
+
+@permission_classes([IsAnonymOrCanCorrect])
+class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
 
@@ -138,6 +138,10 @@ class UsersViewSet(viewsets.ModelViewSet):
 @api_view(['POST'])
 @permission_classes([IsAllowAny])
 def signup(request):
+    username = request.data['username']
+    email = request.data['email']
+    if User.objects.filter(username=username, email=email).exists():
+        return Response(status=status.HTTP_200_OK)
     serializer = SignUpSerializer(data=request.data)
     if serializer.is_valid(raise_exception=True):
         serializer.save()
@@ -147,12 +151,12 @@ def signup(request):
         send_mail(
             'Подтверждение email',
             f'Ваш код подтверждения: {confirmation_code}',
-            'from@example.com',  # Это поле "От кого"
-            ['to@exmaple.com'],  # Это поле "Кому"
-            fail_silently=True,  # Сообщать об ошибках
+            from_email='YandexTeam@example.com',
+            recipient_list=[serializer.data['email']],
+            fail_silently=True,
         )
         return Response(serializer.data, status=status.HTTP_200_OK)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['POST'])

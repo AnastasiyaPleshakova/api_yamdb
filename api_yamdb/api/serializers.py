@@ -87,6 +87,14 @@ class CommentSerializer(serializers.ModelSerializer):
         fields = ('id', 'text', 'author', 'pub_date')
 
 
+class UsersSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(required=False)
+
+    class Meta:
+        model = User
+        fields = '__all__'
+
+
 class SignUpSerializer(serializers.ModelSerializer):
     username = serializers.CharField(required=True)
     email = serializers.CharField(required=True)

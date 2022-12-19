@@ -13,8 +13,8 @@ class IsAnonymOrCanCorrect(permissions.BasePermission):
         return (
             request.method in permissions.SAFE_METHODS
             or request.user == obj.author or (
-            (request.user.is_authenticated or request.user.is_superuser)
-            and (request.user.role in role))
+                (request.user.is_authenticated or request.user.is_superuser)
+                and (request.user.role in role))
         )
 
 
@@ -29,6 +29,16 @@ class IsAdminOrReadOnly(permissions.BasePermission):
         return (
             (request.user.is_authenticated or request.user.is_superuser)
             and request.user.role == 'admin')
+
+
+class IsAdmin(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        return (request.user.role == 'admin')
+
+
+class IsUser(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        return (request.user == obj.username)
 
 
 class IsAllowAny(permissions.BasePermission):

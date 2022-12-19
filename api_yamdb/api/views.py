@@ -4,6 +4,7 @@ from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, mixins, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 
@@ -105,24 +106,33 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 @permission_classes([IsAdmin])
 class UsersViewSet(viewsets.ModelViewSet):
+    # http_method_names = ['get', 'post', 'patch', 'del']
     queryset = User.objects.all()
     serializer_class = UsersSerializer
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('username',)
     lookup_field = 'username'
 
-    @action(detail=False, methods=['patch', 'get'],
-            permission_classes=[IsUser])
+    @action(detail=False,
+            methods=['patch', 'get'],
+            url_path='me',
+            permission_classes=[IsUser],
+            )
     def me(self, request):
-        user = get_object_or_404(User, username=request.user.username)
+        user = request.user
         if request.method == 'PATCH':
-            serializer = UsersSerializer(data=request.data)
-            if serializer.is_valid(raise_exception=True):
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            else:
-                return Response(serializer.errors,
-                                status=status.HTTP_400_BAD_REQUEST)
-        serializer = self.get_serializer(user)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+            serializer = UsersSerializer(
+                user,
+                data=request.data,
+                partial=True
+            )
+            serializer.is_valid(raise_exception=True)
+            serializer.save(role=user.role)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        if request.method == 'GET':
+            serializer = UsersSerializer(user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['POST'])

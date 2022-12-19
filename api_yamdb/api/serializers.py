@@ -1,5 +1,6 @@
 from django.db.models import Avg
 from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
 
 from reviews.models import Category, Comment, Genre, Review, Title
 from users.models import User
@@ -86,16 +87,23 @@ class CommentSerializer(serializers.ModelSerializer):
 
 
 class UsersSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(required=False)
+    # password = serializers.CharField(required=False)
 
     class Meta:
         model = User
-        fields = '__all__'
+        fields = ('username', 'email', 'first_name', 'last_name', 'bio', 'role')
+        read_only = ('role',)
 
 
 class SignUpSerializer(serializers.ModelSerializer):
-    username = serializers.CharField(required=True)
-    email = serializers.CharField(required=True)
+    username = serializers.CharField(
+        required=True,
+        validators=[UniqueValidator(queryset=User.objects.all())],
+    )
+    email = serializers.CharField(
+        required=True,
+        validators=[UniqueValidator(queryset=User.objects.all())],
+    )
 
     class Meta:
         model = User

@@ -1,11 +1,10 @@
 from django.db.models import Avg
+from django.contrib.auth.validators import UnicodeUsernameValidator
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
 from reviews.models import Category, Comment, Genre, Review, Title
 from users.models import User
-from django.contrib.auth.validators import UnicodeUsernameValidator
-import re
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -89,24 +88,33 @@ class CommentSerializer(serializers.ModelSerializer):
 
 
 class UsersSerializer(serializers.ModelSerializer):
-    # password = serializers.CharField(required=False)
     username = serializers.CharField(
         max_length=150,
-        validators=[UnicodeUsernameValidator()],)
+        validators=[
+            UnicodeUsernameValidator(),
+            UniqueValidator(queryset=User.objects.all())],
+    )
 
     class Meta:
         model = User
-        fields = ('username', 'email', 'first_name', 'last_name', 'bio', 'role')
+        fields = (
+            'username', 'email',
+            'first_name', 'last_name',
+            'bio', 'role',
+        )
         read_only = ('role',)
 
 
 class SignUpSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
         required=True,
-        validators=[UniqueValidator(queryset=User.objects.all()), UnicodeUsernameValidator()],
+        validators=[
+            UniqueValidator(queryset=User.objects.all()),
+            UnicodeUsernameValidator()
+        ],
         max_length=150,
     )
-    email = serializers.CharField(
+    email = serializers.EmailField(
         required=True,
         validators=[UniqueValidator(queryset=User.objects.all())],
         max_length=254,
@@ -120,6 +128,9 @@ class SignUpSerializer(serializers.ModelSerializer):
         if value == 'me':
             raise serializers.ValidationError(
                 "Нельзя использовать 'me' в качестве username")
+        if value == '':
+            raise serializers.ValidationError(
+                'Поле "username" не должно быть пустым')
         return value
 
 

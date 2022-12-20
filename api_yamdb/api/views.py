@@ -2,7 +2,7 @@ from django.core.mail import send_mail
 from django.contrib.auth.tokens import default_token_generator
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, mixins, status, viewsets
+from rest_framework import filters, mixins, permissions, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
@@ -14,10 +14,8 @@ from .permissions import (
     IsAdminOrReadOnly,
     IsAllowAny,
     IsAnonymOrCanCorrect,
-    IsUser,
 )
 from .serializers import (
-    CommentSerializer,
     CategorySerializer,
     CommentSerializer,
     GenreSerializer,
@@ -106,7 +104,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 @permission_classes([IsAdmin])
 class UsersViewSet(viewsets.ModelViewSet):
-    # http_method_names = ['get', 'post', 'patch', 'del']
+    http_method_names = ['get', 'post', 'patch', 'delete']
     queryset = User.objects.all()
     serializer_class = UsersSerializer
     filter_backends = (filters.SearchFilter,)
@@ -116,7 +114,7 @@ class UsersViewSet(viewsets.ModelViewSet):
     @action(detail=False,
             methods=['patch', 'get'],
             url_path='me',
-            permission_classes=[IsUser],
+            permission_classes=[permissions.IsAuthenticated],
             )
     def me(self, request):
         user = request.user
@@ -138,25 +136,26 @@ class UsersViewSet(viewsets.ModelViewSet):
 @api_view(['POST'])
 @permission_classes([IsAllowAny])
 def signup(request):
-    username = request.data['username']
-    email = request.data['email']
+    username = request.data.get('username')
+    email = request.data.get('email')
     if User.objects.filter(username=username, email=email).exists():
         return Response(status=status.HTTP_200_OK)
     serializer = SignUpSerializer(data=request.data)
-    if serializer.is_valid(raise_exception=True):
-        serializer.save()
-        user = get_object_or_404(
-            User, username=serializer.validated_data["username"])
-        confirmation_code = default_token_generator.make_token(user)
-        send_mail(
-            'Подтверждение email',
-            f'Ваш код подтверждения: {confirmation_code}',
-            from_email='YandexTeam@example.com',
-            recipient_list=[serializer.data['email']],
-            fail_silently=True,
-        )
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    return Response(status=status.HTTP_400_BAD_REQUEST)
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+    user = get_object_or_404(
+        User,
+        username=serializer.validated_data["username"]
+    )
+    confirmation_code = default_token_generator.make_token(user)
+    send_mail(
+        'Подтверждение email',
+        f'Ваш код подтверждения: {confirmation_code}',
+        from_email='YandexTeam@example.com',
+        recipient_list=[serializer.data['email']],
+        fail_silently=True,
+    )
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])

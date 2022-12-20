@@ -18,3 +18,4 @@ sqlparse==0.4.3
 toml==0.10.2
 typing_extensions==4.4.0
 django-import-export
+python-dotenv==0.21.0

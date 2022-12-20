@@ -1,33 +1,22 @@
-from django.core.mail import send_mail
 from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, mixins, permissions, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
-
-
-from .filters import TitleFilter
-from .permissions import (
-    IsAdmin,
-    IsAdminOrReadOnly,
-    IsAllowAny,
-    IsAnonymOrCanCorrect,
-)
-from .serializers import (
-    CategorySerializer,
-    CommentSerializer,
-    GenreSerializer,
-    GetTokenSerializer,
-    ReviewSerializer,
-    SignUpSerializer,
-    TitleListRetrieveSerializer,
-    TitleSerializer,
-    UsersSerializer,
-)
 from reviews.models import Category, Comment, Genre, Review, Title
 from users.models import User
+
+from .filters import TitleFilter
+from .permissions import (IsAdmin, IsAdminOrReadOnly, IsAllowAny,
+                          IsAnonymOrCanCorrect)
+from .serializers import (CategorySerializer, CommentSerializer,
+                          GenreSerializer, GetTokenSerializer,
+                          ReviewSerializer, SignUpSerializer,
+                          TitleListRetrieveSerializer, TitleSerializer,
+                          UsersSerializer)
 
 
 class CreateDestroyList(

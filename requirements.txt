@@ -2,9 +2,9 @@ asgiref==3.5.2
 attrs==22.1.0
 certifi==2022.12.7
 charset-normalizer==2.0.12
-Django~=3.2
-django-filter~=22.1
-djangorestframework~=3.12.4
+Django==3.2
+django-filter==22.1
+djangorestframework==3.12.4
 djangorestframework-simplejwt==5.2.2
 idna==3.4
 importlib-metadata==5.1.0
@@ -24,3 +24,8 @@ urllib3==1.26.13
 zipp==3.11.0
 python-dotenv==0.21.0
 django-import-export
+flake8
+flake8-isort
+pep8-naming
+flake8-broken-line
+flake8-return

@@ -2,14 +2,13 @@ from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, mixins, permissions, status, viewsets
+from rest_framework import filters, permissions, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
-from reviews.models import Category, Comment, Genre, Review, Title
-from users.models import User
 
 from .filters import TitleFilter
+from .mixins import CreateDestroyList
 from .permissions import (IsAdmin, IsAdminOrReadOnly, IsAllowAny,
                           IsAnonymOrCanCorrect)
 from .serializers import (CategorySerializer, CommentSerializer,
@@ -17,15 +16,8 @@ from .serializers import (CategorySerializer, CommentSerializer,
                           ReviewSerializer, SignUpSerializer,
                           TitleListRetrieveSerializer, TitleSerializer,
                           UsersSerializer)
-
-
-class CreateDestroyList(
-    mixins.CreateModelMixin,
-    mixins.DestroyModelMixin,
-    mixins.ListModelMixin,
-    viewsets.GenericViewSet,
-):
-    pass
+from reviews.models import Category, Comment, Genre, Review, Title
+from users.models import User
 
 
 @permission_classes([IsAdminOrReadOnly])
@@ -65,7 +57,6 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         title = get_object_or_404(Title, id=self.kwargs.get('title_id'))
-        print(self.request.user)
         serializer.save(title=title,
                         author=self.request.user)
 
@@ -134,7 +125,7 @@ def signup(request):
     serializer.save()
     user = get_object_or_404(
         User,
-        username=serializer.validated_data["username"]
+        username=serializer.validated_data['username']
     )
     confirmation_code = default_token_generator.make_token(user)
     send_mail(
@@ -153,9 +144,9 @@ def get_token_for_user(request):
     serializer = GetTokenSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     user = get_object_or_404(
-        User, username=serializer.validated_data["username"])
+        User, username=serializer.validated_data['username'])
     if default_token_generator.check_token(
-            user, serializer.validated_data["confirmation_code"]):
+            user, serializer.validated_data['confirmation_code']):
         token = AccessToken.for_user(user)
         return Response({"token": str(token)}, status=status.HTTP_200_OK)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

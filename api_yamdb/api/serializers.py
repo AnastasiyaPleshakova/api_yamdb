@@ -2,6 +2,7 @@ from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db.models import Avg
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
+
 from reviews.models import Category, Comment, Genre, Review, Title
 from users.models import User
 
@@ -101,7 +102,7 @@ class UsersSerializer(serializers.ModelSerializer):
             'first_name', 'last_name',
             'bio', 'role',
         )
-        read_only = ('role',)
+        read_only_fields = ('role',)
 
 
 class SignUpSerializer(serializers.ModelSerializer):
@@ -126,7 +127,7 @@ class SignUpSerializer(serializers.ModelSerializer):
     def validate_username(self, value):
         if value == 'me':
             raise serializers.ValidationError(
-                "Нельзя использовать 'me' в качестве username")
+                'Нельзя использовать "me" в качестве username')
         if value == '':
             raise serializers.ValidationError(
                 'Поле "username" не должно быть пустым')

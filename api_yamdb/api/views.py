@@ -7,11 +7,13 @@ from rest_framework import filters, permissions, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
+from rest_framework.exceptions import ValidationError
 
+from api_yamdb.settings import from_email
 from .filters import TitleFilter
 from .mixins import CreateDestroyList
-from .permissions import (IsAdmin, IsAdminOrReadOnly, IsAllowAny,
-                          IsAnonymOrCanCorrect)
+from .permissions import (IsAdmin, IsAdminOrReadOnly,
+                          IsAdminOrModeratorOrReadOnly)
 from .serializers import (CategorySerializer, CommentSerializer,
                           GenreSerializer, GetTokenSerializer,
                           ReviewSerializer, SignUpSerializer,
@@ -49,7 +51,7 @@ class GenreViewSet(CreateDestroyList):
     serializer_class = GenreSerializer
 
 
-@permission_classes([IsAnonymOrCanCorrect])
+@permission_classes([IsAdminOrModeratorOrReadOnly])
 class ReviewViewSet(viewsets.ModelViewSet):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
@@ -64,7 +66,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
         return title.reviews.all()
 
 
-@permission_classes([IsAnonymOrCanCorrect])
+@permission_classes([IsAdminOrModeratorOrReadOnly])
 class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
@@ -103,40 +105,35 @@ class UsersViewSet(viewsets.ModelViewSet):
             )
             serializer.is_valid(raise_exception=True)
             serializer.save(role=user.role)
-            return Response(serializer.data, status=status.HTTP_200_OK)
         if request.method == 'GET':
             serializer = UsersSerializer(user)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
-@permission_classes([IsAllowAny])
 def signup(request):
-    username = request.data.get('username')
-    email = request.data.get('email')
-    if User.objects.filter(username=username, email=email).exists():
-        return Response(status=status.HTTP_200_OK)
     serializer = SignUpSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    serializer.save()
-    user = get_object_or_404(
-        User,
-        username=serializer.validated_data['username']
-    )
+    username = serializer.validated_data['username']
+    email = serializer.validated_data['email']
+    try:
+        user, created = User.objects.get_or_create(
+            username=username, email=email)
+    except Exception:
+        raise ValidationError('Неправильный username или email')
+
     confirmation_code = default_token_generator.make_token(user)
     send_mail(
         'Подтверждение email',
         f'Ваш код подтверждения: {confirmation_code}',
-        from_email='YandexTeam@example.com',
-        recipient_list=[serializer.data['email']],
+        from_email=from_email,
+        recipient_list=[serializer.validated_data['email']],
         fail_silently=True,
     )
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
-@permission_classes([IsAllowAny])
 def get_token_for_user(request):
     serializer = GetTokenSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)

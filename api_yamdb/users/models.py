@@ -14,12 +14,12 @@ class User(AbstractUser):
         (USER, 'Пользователь'),
     )
     email = models.EmailField(
-        'Электронная почта',
+        verbose_name='Электронная почта',
         max_length=254,
         unique=True,
     )
     username = models.CharField(
-        'Имя пользователя',
+        verbose_name='Имя пользователя',
         max_length=150,
         unique=True,
     )
@@ -27,12 +27,17 @@ class User(AbstractUser):
         'Роль', max_length=max([len(role[FIRST_OBJECT]) for role in ROLES]),
         choices=ROLES, default='user',
     )
-    bio = models.TextField('Биография', null=True, blank=True)
+    bio = models.TextField(
+        verbose_name='Биография',
+        null=True,
+        blank=True
+    )
 
     class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
         ordering = ['id']
+        verbose_name = 'Пользователь'
 
     def __str__(self):
         return self.username

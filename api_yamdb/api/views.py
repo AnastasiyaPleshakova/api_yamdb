@@ -2,6 +2,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
+from django.db.models import Avg
 from rest_framework import filters, permissions, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
@@ -20,9 +21,13 @@ from reviews.models import Category, Comment, Genre, Review, Title
 from users.models import User
 
 
+def get_object(self, model, object_id):
+    return get_object_or_404(model, id=self.kwargs.get(object_id))
+
+
 @permission_classes([IsAdminOrReadOnly])
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.all()
+    queryset = Title.objects.all().annotate(rating=Avg("reviews__score"))
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
 
@@ -56,13 +61,12 @@ class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
 
     def perform_create(self, serializer):
-        title = get_object_or_404(Title, id=self.kwargs.get('title_id'))
+        title = get_object(self, Title, 'title_id')
         serializer.save(title=title,
                         author=self.request.user)
 
     def get_queryset(self):
-        title_id = self.kwargs.get('title_id')
-        title = get_object_or_404(Title, id=title_id)
+        title = get_object(self, Title, 'title_id')
         return title.reviews.all()
 
 
@@ -72,13 +76,12 @@ class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
 
     def perform_create(self, serializer):
-        review = get_object_or_404(Review, id=self.kwargs.get('review_id'))
+        review = get_object(self, Review, 'review_id')
         serializer.save(review=review,
                         author=self.request.user)
 
     def get_queryset(self):
-        review_id = self.kwargs.get('review_id')
-        review = get_object_or_404(Review, id=review_id)
+        review = get_object(self, Review, 'review_id')
         return review.comments.all()
 
 

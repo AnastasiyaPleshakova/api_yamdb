@@ -1,4 +1,4 @@
-from rest_framework import mixins, viewsets
+from rest_framework import mixins, viewsets, filters
 
 
 class CreateDestroyList(
@@ -7,4 +7,7 @@ class CreateDestroyList(
     mixins.ListModelMixin,
     viewsets.GenericViewSet,
 ):
-    pass
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
+    lookup_field = 'slug'
+

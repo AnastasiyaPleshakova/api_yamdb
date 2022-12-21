@@ -1,3 +1,5 @@
+import datetime
+
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.validators import MaxValueValidator, MinValueValidator
 from rest_framework import serializers
@@ -33,27 +35,36 @@ class TitleSerializer(serializers.ModelSerializer):
     )
     rating = serializers.FloatField(read_only=True, default=None)
 
+    def validate_year(self, value):
+        if value > datetime.datetime.now().year:
+            raise serializers.ValidationError(
+                f'Год выпуска {value} больше текущего'
+            )
+        return value
+
     class Meta:
         model = Title
         fields = ('id', 'name', 'year', 'description', 'category', 'genre',
                   'rating')
 
     def to_representation(self, value):
-        rep = super().to_representation(value)
-        rep['category'] = CategorySerializer(value.category).data
-        rep['genre'] = GenreSerializer(value.genre.all(), many=True).data
-        return rep
+        representation = super().to_representation(value)
+        representation['category'] = CategorySerializer(value.category).data
+        representation['genre'] = GenreSerializer(value.genre.all(), many=True).data
+        return representation
 
 
 class TitleListRetrieveSerializer(serializers.ModelSerializer):
-    category = CategorySerializer(read_only=True)
-    genre = GenreSerializer(read_only=True, many=True)
-    rating = serializers.FloatField(read_only=True, default=0)
+    category = CategorySerializer()
+    genre = GenreSerializer(many=True)
+    rating = serializers.FloatField(default=0)
 
     class Meta:
         model = Title
-        fields = ('id', 'name', 'year', 'description', 'category', 'genre',
-                  'rating')
+        fields = ('id', 'name', 'year', 'description', 'category', 'genre', 'rating',)
+        read_only_fields = (
+            'id', 'name', 'year', 'description', 'category', 'genre', 'rating',
+        )
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -72,7 +83,7 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
         fields = ('id', 'text', 'author', 'score', 'pub_date')
-        read_only = ('title',)
+        read_only_fields = ('title',)
 
     def validate(self, data):
         if (self.context['request'].method == 'POST' and Review.objects.filter(
@@ -93,7 +104,7 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = ('id', 'text', 'author', 'pub_date')
-        read_only = ('review',)
+        read_only_fields = ('review',)
 
 
 class UsersSerializer(serializers.ModelSerializer):

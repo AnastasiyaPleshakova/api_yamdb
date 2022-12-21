@@ -3,6 +3,7 @@ from django.db.models import Avg
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
+from api_yamdb.settings import username_max_length, email_max_length
 from reviews.models import Category, Comment, Genre, Review, Title
 from users.models import User
 
@@ -89,7 +90,7 @@ class CommentSerializer(serializers.ModelSerializer):
 
 class UsersSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
-        max_length=150,
+        max_length=username_max_length,
         validators=[
             UnicodeUsernameValidator(),
             UniqueValidator(queryset=User.objects.all())],
@@ -102,22 +103,17 @@ class UsersSerializer(serializers.ModelSerializer):
             'first_name', 'last_name',
             'bio', 'role',
         )
-        read_only_fields = ('role',)
 
 
 class SignUpSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
         required=True,
-        validators=[
-            UniqueValidator(queryset=User.objects.all()),
-            UnicodeUsernameValidator()
-        ],
-        max_length=150,
+        validators=[UnicodeUsernameValidator()],
+        max_length=username_max_length,
     )
     email = serializers.EmailField(
         required=True,
-        validators=[UniqueValidator(queryset=User.objects.all())],
-        max_length=254,
+        max_length=email_max_length,
     )
 
     class Meta:
@@ -133,8 +129,18 @@ class SignUpSerializer(serializers.ModelSerializer):
                 'Поле "username" не должно быть пустым')
         return value
 
+    def validate(self, data):
+        bool_username = User.objects.filter(username=data['username']).exists()
+        bool_email = User.objects.filter(email=data['email']).exists()
+        if User.objects.filter(username=data['username'], email=data['email']):
+            return data
+        if (bool_username or bool_email):
+            raise serializers.ValidationError(
+                'Такое имя или почта уже существуют'
+            )
+        return data
+
 
 class GetTokenSerializer(serializers.Serializer):
-    token = serializers.CharField(required=False)
     confirmation_code = serializers.CharField(required=False)
     username = serializers.CharField(required=True)

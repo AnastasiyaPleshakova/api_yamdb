@@ -31,18 +31,24 @@ class TitleSerializer(serializers.ModelSerializer):
         many=True,
         slug_field='slug'
     )
-    rating = serializers.FloatField(read_only=True)
+    rating = serializers.FloatField(read_only=True, default=None)
 
     class Meta:
         model = Title
         fields = ('id', 'name', 'year', 'description', 'category', 'genre',
                   'rating')
 
+    def to_representation(self, value):
+        rep = super().to_representation(value)
+        rep['category'] = CategorySerializer(value.category).data
+        rep['genre'] = GenreSerializer(value.genre.all(), many=True).data
+        return rep
+
 
 class TitleListRetrieveSerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
     genre = GenreSerializer(read_only=True, many=True)
-    rating = serializers.FloatField(read_only=True)
+    rating = serializers.FloatField(read_only=True, default=0)
 
     class Meta:
         model = Title
@@ -56,9 +62,11 @@ class ReviewSerializer(serializers.ModelSerializer):
         slug_field='username'
     )
     score = serializers.IntegerField(
-        validators=[MinValueValidator(1, message='Введите число >=1'),
-                    MaxValueValidator(10, message='Введите число <=10')],
-        default=1
+        validators=[MinValueValidator(1,
+                    message='Оценка не может быть меньше 1'),
+                    MaxValueValidator(10,
+                    message='Оценка не может быть больше 10')],
+        default=5
     )
 
     class Meta:

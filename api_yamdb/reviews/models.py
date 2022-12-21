@@ -110,9 +110,11 @@ class GenreTitle(models.Model):
 class Review(ReviewCommentBaseModel):
     score = models.PositiveSmallIntegerField(
         'Оценка',
-        validators=[MinValueValidator(1, message='Введите число >=1'),
-                    MaxValueValidator(10, message='Введите число <=10')],
-        default=1
+        validators=[MinValueValidator(1,
+                    message='Оценка не может быть меньше 1'),
+                    MaxValueValidator(10,
+                    message='Оценка не может быть больше 10')],
+        default=5
     )
     title = models.ForeignKey(
         Title,

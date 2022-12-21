@@ -128,3 +128,6 @@ from_email = 'YandexTeam@example.com'
 
 username_max_length = 150
 email_max_length = 254
+name_max_length = 256
+slug_max_length = 50
+user_name_max_length = 150

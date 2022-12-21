@@ -1,6 +1,7 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
+from api_yamdb.settings import name_max_length, slug_max_length
 from reviews.validators import validate_year
 from users.models import User
 
@@ -28,8 +29,8 @@ class ReviewCommentBaseModel(models.Model):
 
 
 class CategoryGenreBaseModel(models.Model):
-    name = models.CharField('Наименование', max_length=256)
-    slug = models.SlugField(unique=True, max_length=50)
+    name = models.CharField('Наименование', max_length=name_max_length)
+    slug = models.SlugField(unique=True, max_length=slug_max_length)
 
     class Meta:
         abstract = True
@@ -52,7 +53,7 @@ class Category(CategoryGenreBaseModel):
 
 
 class Title(models.Model):
-    name = models.CharField('Произведение', max_length=256)
+    name = models.CharField('Произведение', max_length=name_max_length)
     year = models.PositiveSmallIntegerField(
         'Год выпуска',
         validators=[validate_year],

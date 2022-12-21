@@ -1,6 +1,12 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
+from api_yamdb.settings import (
+    email_max_length,
+    user_name_max_length,
+    username_max_length,
+)
+
 FIRST_OBJECT = 0
 
 
@@ -15,12 +21,12 @@ class User(AbstractUser):
     )
     email = models.EmailField(
         verbose_name='Электронная почта',
-        max_length=254,
+        max_length=email_max_length,
         unique=True,
     )
     username = models.CharField(
         verbose_name='Имя пользователя',
-        max_length=150,
+        max_length=username_max_length,
         unique=True,
     )
     role = models.CharField(
@@ -28,7 +34,19 @@ class User(AbstractUser):
         choices=ROLES, default='user',
     )
     bio = models.TextField(
-        verbose_name='Биография',
+        'Биография',
+        null=True,
+        blank=True
+    )
+    first_name = models.TextField(
+        'Имя',
+        max_length=user_name_max_length,
+        null=True,
+        blank=True
+    )
+    last_name = models.TextField(
+        'Фамилия',
+        max_length=user_name_max_length,
         null=True,
         blank=True
     )
@@ -49,7 +67,7 @@ class User(AbstractUser):
     @property
     def is_admin(self):
         return (
-            self.role == self.ADMIN and
-            self.is_superuser and
-            self.is_staff
+            self.role == self.ADMIN
+            or self.is_superuser
+            or self.is_staff
         )

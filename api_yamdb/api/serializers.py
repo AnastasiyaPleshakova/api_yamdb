@@ -51,7 +51,8 @@ class TitleSerializer(serializers.ModelSerializer):
     def to_representation(self, value):
         representation = super().to_representation(value)
         representation['category'] = CategorySerializer(value.category).data
-        representation['genre'] = GenreSerializer(value.genre.all(), many=True).data
+        representation['genre'] = GenreSerializer(
+            value.genre.all(), many=True).data
         return representation
 
 
@@ -62,7 +63,11 @@ class TitleListRetrieveSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Title
-        fields = ('id', 'name', 'year', 'description', 'category', 'genre', 'rating',)
+        fields = (
+            'id', 'name',
+            'year', 'description',
+            'category', 'genre', 'rating',
+        )
         read_only_fields = (
             'id', 'name', 'year', 'description', 'category', 'genre', 'rating',
         )

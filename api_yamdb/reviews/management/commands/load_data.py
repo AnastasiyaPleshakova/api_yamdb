@@ -11,7 +11,7 @@ class Command(BaseCommand):
 
     def _load_user(self):
         with open(
-                'D:/Dev_v4/api_yamdb/api_yamdb/static/data/users.csv',
+                'static/data/users.csv',
                 encoding='utf-8'
         ) as csvfile:
             reader = csv.DictReader(csvfile)
@@ -23,7 +23,7 @@ class Command(BaseCommand):
 
     def _load_category(self):
         with open(
-                'D:/Dev_v4/api_yamdb/api_yamdb/static/data/category.csv',
+                'static/data/category.csv',
                 encoding='utf-8'
         ) as csvfile:
             reader = csv.DictReader(csvfile)
@@ -35,7 +35,7 @@ class Command(BaseCommand):
 
     def _load_genre(self):
         with open(
-                'D:/Dev_v4/api_yamdb/api_yamdb/static/data/genre.csv',
+                'static/data/genre.csv',
                 encoding='utf-8'
         ) as csvfile:
             reader = csv.DictReader(csvfile)
@@ -47,7 +47,7 @@ class Command(BaseCommand):
 
     def _load_title(self):
         with open(
-                'D:/Dev_v4/api_yamdb/api_yamdb/static/data/titles.csv',
+                'static/data/titles.csv',
                 encoding='utf-8'
         ) as csvfile:
             reader = csv.DictReader(csvfile)
@@ -64,7 +64,7 @@ class Command(BaseCommand):
 
     def _load_genretitle(self):
         with open(
-                'D:/Dev_v4/api_yamdb/api_yamdb/static/data/genre_title.csv',
+                'static/data/genre_title.csv',
                 encoding='utf-8'
         ) as csvfile:
             reader = csv.DictReader(csvfile)
@@ -80,7 +80,7 @@ class Command(BaseCommand):
 
     def _load_review(self):
         with open(
-                'D:/Dev_v4/api_yamdb/api_yamdb/static/data/review.csv',
+                'static/data/review.csv',
                 encoding='utf-8'
         ) as csvfile:
             reader = csv.DictReader(csvfile)
@@ -101,7 +101,7 @@ class Command(BaseCommand):
 
     def _load_comment(self):
         with open(
-                'D:/Dev_v4/api_yamdb/api_yamdb/static/data/comments.csv',
+                'static/data/comments.csv',
                 encoding='utf-8'
         ) as csvfile:
             reader = csv.DictReader(csvfile)

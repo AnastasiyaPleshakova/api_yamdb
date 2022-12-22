@@ -21,10 +21,6 @@ from reviews.models import Category, Comment, Genre, Review, Title
 from users.models import User
 
 
-def get_object(self, model, object_id):
-    return get_object_or_404(model, id=self.kwargs.get(object_id))
-
-
 @permission_classes([IsAdminOrReadOnly])
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all().annotate(rating=Avg("reviews__score"))
@@ -60,14 +56,15 @@ class ReviewViewSet(viewsets.ModelViewSet):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
 
+    def get_title(self):
+        return get_object_or_404(Title, id=self.kwargs.get('title_id'))
+
     def perform_create(self, serializer):
-        title = get_object(self, Title, 'title_id')
-        serializer.save(title=title,
+        serializer.save(title=self.get_title(),
                         author=self.request.user)
 
     def get_queryset(self):
-        title = get_object(self, Title, 'title_id')
-        return title.reviews.all()
+        return self.get_title().reviews.all()
 
 
 @permission_classes([IsAnonymOrCanCorrect])
@@ -75,14 +72,15 @@ class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
 
+    def get_review(self):
+        return get_object_or_404(Review, id=self.kwargs.get('review_id'))
+
     def perform_create(self, serializer):
-        review = get_object(self, Review, 'review_id')
-        serializer.save(review=review,
+        serializer.save(review=self.get_review(),
                         author=self.request.user)
 
     def get_queryset(self):
-        review = get_object(self, Review, 'review_id')
-        return review.comments.all()
+        return self.get_review().comments.all()
 
 
 @permission_classes([IsAdmin])

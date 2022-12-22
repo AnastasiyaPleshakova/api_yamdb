@@ -1,4 +1,5 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.conf import settings
 from django.db import models
 
 from reviews.validators import validate_year
@@ -21,43 +22,42 @@ class ReviewCommentBaseModel(models.Model):
 
     class Meta:
         abstract = True
-        ordering = ['id']
+        ordering = ('pub_date',)
 
     def __str__(self):
         return self.text[:30]
 
 
-class Genre(models.Model):
-    name = models.CharField('Жанр', max_length=256)
-    slug = models.SlugField(unique=True, max_length=50)
+class CategoryGenreBaseModel(models.Model):
+    name = models.CharField('Наименование', max_length=settings.NAME_MAX_LENGTH)
+    slug = models.SlugField(unique=True, max_length=settings.SLUG_MAX_LENGTH)
 
     class Meta:
+        abstract = True
+        ordering = ('name',)
+
+    def __str__(self):
+        return self.name[:20]
+
+
+class Genre(CategoryGenreBaseModel):
+    class Meta(CategoryGenreBaseModel.Meta):
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
-        ordering = ['id']
-
-    def __str__(self):
-        return self.name[:15]
 
 
-class Category(models.Model):
-    name = models.TextField('Категория', max_length=256)
-    slug = models.SlugField(unique=True, max_length=50)
-
-    class Meta:
+class Category(CategoryGenreBaseModel):
+    class Meta(CategoryGenreBaseModel.Meta):
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
-        ordering = ['id']
-
-    def __str__(self):
-        return self.name[:30]
 
 
 class Title(models.Model):
-    name = models.TextField('Произведение', max_length=256)
-    year = models.IntegerField(
+    name = models.CharField('Произведение', max_length=settings.NAME_MAX_LENGTH)
+    year = models.PositiveSmallIntegerField(
         'Год выпуска',
         validators=[validate_year],
+        db_index=True,
     )
     description = models.TextField(
         'Описание',
@@ -77,7 +77,7 @@ class Title(models.Model):
     class Meta:
         verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'
-        ordering = ['id']
+        ordering = ('name',)
 
     def __str__(self):
         return self.name[:30]
@@ -98,7 +98,7 @@ class GenreTitle(models.Model):
     class Meta:
         verbose_name = 'Произведение и жанр'
         verbose_name_plural = 'Произведения и жанры'
-        ordering = ['id']
+        ordering = ('id',)
 
     def __str__(self):
         return (
@@ -141,5 +141,5 @@ class Comment(ReviewCommentBaseModel):
 
     class Meta(ReviewCommentBaseModel.Meta):
         verbose_name = 'Комментарий'
-        verbose_name_plural = 'Комментарии',
+        verbose_name_plural = 'Комментарии'
         default_related_name = 'comments'

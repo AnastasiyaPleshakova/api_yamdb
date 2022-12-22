@@ -1,15 +1,26 @@
 from django.contrib import admin
+from django.contrib.auth.models import Group
 
 from .models import Category, Comment, Genre, GenreTitle, Review, Title
 
 
+class GenreTitleTabular(admin.TabularInline):
+    model = GenreTitle
+
+
 @admin.register(Title)
 class TitleAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'name', 'category', 'year',)
+    list_display = ('pk', 'name', 'category', 'year', 'get_genres')
+
+    def get_genres(self, obj):
+        return ', '.join([str(genre) for genre in obj.genre.all()])
+
     list_filter = ('category',)
     list_editable = ('category', 'year',)
     search_fields = ('name',)
     empty_value_display = '-пусто-'
+    inlines = [GenreTitleTabular, ]
+    get_genres.short_description = 'Жанры'
 
 
 @admin.register(Genre)
@@ -49,3 +60,6 @@ class CommentAdmin(admin.ModelAdmin):
 @admin.register(GenreTitle)
 class GenreTitleAdmin(admin.ModelAdmin):
     list_display = ('pk', 'title', 'genre')
+
+
+admin.site.unregister(Group)

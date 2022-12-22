@@ -104,7 +104,7 @@ AUTH_USER_MODEL = 'users.User'
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
+        'rest_framework.permissions.AllowAny',
     ],
 
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -124,3 +124,10 @@ SIMPLE_JWT = {
 
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
+FROM_EMAIL = 'YandexTeam@example.com'
+
+USERNAME_MAX_LENGTH = 150
+EMAIL_MAX_LENGTH = 254
+NAME_MAX_LENGTH = 256
+SLUG_MAX_LENGTH = 50
+USER_NAME_MAX_LENGTH = 150

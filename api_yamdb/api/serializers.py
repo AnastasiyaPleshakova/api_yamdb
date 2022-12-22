@@ -1,3 +1,6 @@
+import datetime
+
+from django.conf import settings
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.core.validators import MaxValueValidator, MinValueValidator
 from rest_framework import serializers
@@ -22,14 +25,20 @@ class GenreSerializer(serializers.ModelSerializer):
 
 
 class TitleListRetrieveSerializer(serializers.ModelSerializer):
-    category = CategorySerializer(read_only=True)
-    genre = GenreSerializer(read_only=True, many=True)
-    rating = serializers.FloatField(read_only=True, default=0)
+    category = CategorySerializer()
+    genre = GenreSerializer(many=True)
+    rating = serializers.IntegerField(default=0)
 
     class Meta:
         model = Title
-        fields = ('id', 'name', 'year', 'description', 'category', 'genre',
-                  'rating')
+        fields = (
+            'id', 'name',
+            'year', 'description',
+            'category', 'genre', 'rating',
+        )
+        read_only_fields = (
+            'id', 'name', 'year', 'description', 'category', 'genre', 'rating',
+        )
 
 
 class TitleSerializer(serializers.ModelSerializer):
@@ -42,12 +51,19 @@ class TitleSerializer(serializers.ModelSerializer):
         many=True,
         slug_field='slug'
     )
-    rating = serializers.FloatField(read_only=True, default=None)
+    rating = serializers.IntegerField(read_only=True, default=None)
 
     class Meta:
         model = Title
         fields = ('id', 'name', 'year', 'description', 'category', 'genre',
                   'rating')
+
+    def validate_year(self, value):
+        if value > datetime.datetime.now().year:
+            raise serializers.ValidationError(
+                f'Год выпуска {value} больше текущего'
+            )
+        return value
 
     def to_representation(self, value):
         return TitleListRetrieveSerializer(value).data
@@ -69,7 +85,7 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
         fields = ('id', 'text', 'author', 'score', 'pub_date')
-        read_only = ('title',)
+        read_only_fields = ('title',)
 
     def validate(self, data):
         if (self.context['request'].method == 'POST' and Review.objects.filter(
@@ -90,12 +106,12 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = ('id', 'text', 'author', 'pub_date')
-        read_only = ('review',)
+        read_only_fields = ('review',)
 
 
 class UsersSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
-        max_length=150,
+        max_length=settings.USERNAME_MAX_LENGTH,
         validators=[
             UnicodeUsernameValidator(),
             UniqueValidator(queryset=User.objects.all())],
@@ -108,22 +124,17 @@ class UsersSerializer(serializers.ModelSerializer):
             'first_name', 'last_name',
             'bio', 'role',
         )
-        read_only = ('role',)
 
 
 class SignUpSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
         required=True,
-        validators=[
-            UniqueValidator(queryset=User.objects.all()),
-            UnicodeUsernameValidator()
-        ],
-        max_length=150,
+        validators=[UnicodeUsernameValidator()],
+        max_length=settings.USERNAME_MAX_LENGTH,
     )
     email = serializers.EmailField(
         required=True,
-        validators=[UniqueValidator(queryset=User.objects.all())],
-        max_length=254,
+        max_length=settings.EMAIL_MAX_LENGTH,
     )
 
     class Meta:
@@ -139,8 +150,18 @@ class SignUpSerializer(serializers.ModelSerializer):
                 'Поле "username" не должно быть пустым')
         return value
 
+    def validate(self, data):
+        bool_username = User.objects.filter(username=data['username']).exists()
+        bool_email = User.objects.filter(email=data['email']).exists()
+        if User.objects.filter(username=data['username'], email=data['email']):
+            return data
+        if (bool_username or bool_email):
+            raise serializers.ValidationError(
+                'Такое имя или почта уже существуют'
+            )
+        return data
+
 
 class GetTokenSerializer(serializers.Serializer):
-    token = serializers.CharField(required=False)
     confirmation_code = serializers.CharField(required=False)
     username = serializers.CharField(required=True)

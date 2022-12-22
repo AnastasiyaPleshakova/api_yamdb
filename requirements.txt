@@ -24,8 +24,4 @@ urllib3==1.26.13
 zipp==3.11.0
 python-dotenv==0.21.0
 django-import-export
-flake8
-flake8-isort
-pep8-naming
-flake8-broken-line
-flake8-return
+

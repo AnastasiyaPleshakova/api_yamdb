@@ -25,7 +25,7 @@ class User(AbstractUser):
         unique=True,
     )
     role = models.CharField(
-        'Роль', max_length=max([len(role[FIRST_OBJECT]) for role in ROLES]),
+        'Роль', max_length=max([len(value) for value, name in ROLES]),
         choices=ROLES, default='user',
     )
     bio = models.TextField(

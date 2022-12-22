@@ -24,6 +24,23 @@ class GenreSerializer(serializers.ModelSerializer):
         exclude = ('id',)
 
 
+class TitleListRetrieveSerializer(serializers.ModelSerializer):
+    category = CategorySerializer()
+    genre = GenreSerializer(many=True)
+    rating = serializers.IntegerField(default=0)
+
+    class Meta:
+        model = Title
+        fields = (
+            'id', 'name',
+            'year', 'description',
+            'category', 'genre', 'rating',
+        )
+        read_only_fields = (
+            'id', 'name', 'year', 'description', 'category', 'genre', 'rating',
+        )
+
+
 class TitleSerializer(serializers.ModelSerializer):
     category = serializers.SlugRelatedField(
         queryset=Category.objects.all(),
@@ -48,30 +65,8 @@ class TitleSerializer(serializers.ModelSerializer):
             )
         return value
 
-
     def to_representation(self, value):
-        representation = super().to_representation(value)
-        representation['category'] = CategorySerializer(value.category).data
-        representation['genre'] = GenreSerializer(
-            value.genre.all(), many=True).data
-        return representation
-
-
-class TitleListRetrieveSerializer(serializers.ModelSerializer):
-    category = CategorySerializer()
-    genre = GenreSerializer(many=True)
-    rating = serializers.IntegerField(default=0)
-
-    class Meta:
-        model = Title
-        fields = (
-            'id', 'name',
-            'year', 'description',
-            'category', 'genre', 'rating',
-        )
-        read_only_fields = (
-            'id', 'name', 'year', 'description', 'category', 'genre', 'rating',
-        )
+        return TitleListRetrieveSerializer(value).data
 
 
 class ReviewSerializer(serializers.ModelSerializer):

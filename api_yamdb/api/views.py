@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
@@ -9,7 +10,6 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 from rest_framework.exceptions import ValidationError
 
-from api_yamdb.settings import from_email
 from .filters import TitleFilter
 from .mixins import CreateDestroyList
 from .permissions import (IsAdmin, IsAdminOrReadOnly,
@@ -29,7 +29,7 @@ def get_object(self, model, object_id):
 
 @permission_classes([IsAdminOrReadOnly])
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.all().annotate(rating=Avg("reviews__score"))
+    queryset = Title.objects.all().annotate(rating=Avg('reviews__score'))
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
 
@@ -126,7 +126,7 @@ def signup(request):
     send_mail(
         'Подтверждение email',
         f'Ваш код подтверждения: {confirmation_code}',
-        from_email=from_email,
+        from_email=settings.FROM_EMAIL,
         recipient_list=[serializer.validated_data['email']],
         fail_silently=True,
     )

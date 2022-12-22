@@ -1,11 +1,6 @@
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-
-from api_yamdb.settings import (
-    email_max_length,
-    user_name_max_length,
-    username_max_length,
-)
 
 FIRST_OBJECT = 0
 
@@ -21,12 +16,12 @@ class User(AbstractUser):
     )
     email = models.EmailField(
         verbose_name='Электронная почта',
-        max_length=email_max_length,
+        max_length=settings.EMAIL_MAX_LENGTH,
         unique=True,
     )
     username = models.CharField(
         verbose_name='Имя пользователя',
-        max_length=username_max_length,
+        max_length=settings.USERNAME_MAX_LENGTH,
         unique=True,
     )
     role = models.CharField(
@@ -40,13 +35,13 @@ class User(AbstractUser):
     )
     first_name = models.TextField(
         'Имя',
-        max_length=user_name_max_length,
+        max_length=settings.USER_NAME_MAX_LENGTH,
         null=True,
         blank=True
     )
     last_name = models.TextField(
         'Фамилия',
-        max_length=user_name_max_length,
+        max_length=settings.USER_NAME_MAX_LENGTH,
         null=True,
         blank=True
     )
@@ -54,8 +49,7 @@ class User(AbstractUser):
     class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
-        ordering = ['id']
-        verbose_name = 'Пользователь'
+        ordering = ('id',)
 
     def __str__(self):
         return self.username

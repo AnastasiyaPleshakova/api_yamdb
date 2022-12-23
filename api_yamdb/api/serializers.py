@@ -8,6 +8,7 @@ from rest_framework.validators import UniqueValidator
 
 from reviews.models import Category, Comment, Genre, Review, Title
 from users.models import User
+from .mixins import MeValidator
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -126,10 +127,10 @@ class UsersSerializer(serializers.ModelSerializer):
         )
 
 
-class SignUpSerializer(serializers.ModelSerializer):
+class SignUpSerializer(serializers.ModelSerializer, MeValidator):
     username = serializers.CharField(
         required=True,
-        validators=[UnicodeUsernameValidator()],
+        validators=[UnicodeUsernameValidator(), ],
         max_length=settings.USERNAME_MAX_LENGTH,
     )
     email = serializers.EmailField(
@@ -141,27 +142,10 @@ class SignUpSerializer(serializers.ModelSerializer):
         model = User
         fields = ('username', 'email')
 
-    def validate_username(self, value):
-        if value == 'me':
-            raise serializers.ValidationError(
-                'Нельзя использовать "me" в качестве username')
-        if value == '':
-            raise serializers.ValidationError(
-                'Поле "username" не должно быть пустым')
-        return value
-
-    def validate(self, data):
-        bool_username = User.objects.filter(username=data['username']).exists()
-        bool_email = User.objects.filter(email=data['email']).exists()
-        if User.objects.filter(username=data['username'], email=data['email']):
-            return data
-        if (bool_username or bool_email):
-            raise serializers.ValidationError(
-                'Такое имя или почта уже существуют'
-            )
-        return data
-
 
 class GetTokenSerializer(serializers.Serializer):
     confirmation_code = serializers.CharField(required=False)
-    username = serializers.CharField(required=True)
+    username = serializers.CharField(
+        required=True,
+        validators=[UnicodeUsernameValidator()],
+    )

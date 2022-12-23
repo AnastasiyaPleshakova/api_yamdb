@@ -1,14 +1,14 @@
 from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
+from django.db.utils import IntegrityError
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Avg
-from rest_framework import filters, permissions, status, viewsets
+from rest_framework import filters, permissions, status, viewsets, serializers
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
-from rest_framework.exceptions import ValidationError
 
 from .filters import TitleFilter
 from .mixins import CreateDestroyList
@@ -116,11 +116,16 @@ def signup(request):
     serializer.is_valid(raise_exception=True)
     username = serializer.validated_data['username']
     email = serializer.validated_data['email']
+    USERNAME_ERROR = 'Такой username уже занят!'
+    EMAIL_ERROR = 'Такой email уже занят!'
+
     try:
         user, created = User.objects.get_or_create(
             username=username, email=email)
-    except Exception:
-        raise ValidationError('Неправильный username или email')
+    except IntegrityError:
+        valid_error = USERNAME_ERROR if User.objects.filter(
+            username=serializer.validated_data['username']).exists() else EMAIL_ERROR
+        raise serializers.ValidationError(detail=[valid_error, ])
 
     confirmation_code = default_token_generator.make_token(user)
     send_mail(

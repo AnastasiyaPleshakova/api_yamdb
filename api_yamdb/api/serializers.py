@@ -28,7 +28,7 @@ class GenreSerializer(serializers.ModelSerializer):
 class TitleListRetrieveSerializer(serializers.ModelSerializer):
     category = CategorySerializer()
     genre = GenreSerializer(many=True)
-    rating = serializers.IntegerField(default=0)
+    rating = serializers.IntegerField(default=None)
 
     class Meta:
         model = Title
@@ -52,12 +52,10 @@ class TitleSerializer(serializers.ModelSerializer):
         many=True,
         slug_field='slug'
     )
-    rating = serializers.IntegerField(read_only=True, default=None)
 
     class Meta:
         model = Title
-        fields = ('id', 'name', 'year', 'description', 'category', 'genre',
-                  'rating')
+        fields = ('id', 'name', 'year', 'description', 'category', 'genre')
 
     def validate_year(self, value):
         if value > datetime.datetime.now().year:

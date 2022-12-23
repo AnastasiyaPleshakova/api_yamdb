@@ -147,9 +147,8 @@ class SignUpSerializer(serializers.ModelSerializer, MeValidator):
         fields = ('username', 'email')
 
 
-class GetTokenSerializer(serializers.Serializer):
+class GetTokenSerializer(serializers.Serializer, MeValidator):
     confirmation_code = serializers.CharField(required=False)
     username = serializers.CharField(
         required=True,
-        validators=[UnicodeUsernameValidator()],
     )

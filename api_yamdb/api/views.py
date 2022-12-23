@@ -124,7 +124,8 @@ def signup(request):
             username=username, email=email)
     except IntegrityError:
         valid_error = USERNAME_ERROR if User.objects.filter(
-            username=serializer.validated_data['username']).exists() else EMAIL_ERROR
+            username=serializer.validated_data['username']).exists() \
+            else EMAIL_ERROR
         raise serializers.ValidationError(detail=[valid_error, ])
 
     confirmation_code = default_token_generator.make_token(user)

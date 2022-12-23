@@ -117,6 +117,11 @@ class UsersSerializer(serializers.ModelSerializer):
             UnicodeUsernameValidator(),
             UniqueValidator(queryset=User.objects.all())],
     )
+    email = serializers.EmailField(
+        required=True,
+        max_length=settings.EMAIL_MAX_LENGTH,
+        validators=[UniqueValidator(queryset=User.objects.all())]
+    )
 
     class Meta:
         model = User

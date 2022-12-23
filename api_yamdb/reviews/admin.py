@@ -11,15 +11,14 @@ class GenreTitleTabular(admin.TabularInline):
 @admin.register(Title)
 class TitleAdmin(admin.ModelAdmin):
     list_display = ('pk', 'name', 'category', 'year', 'get_genres')
-
-    def get_genres(self, obj):
-        return ', '.join([str(genre) for genre in obj.genre.all()])
-
     list_filter = ('category',)
     list_editable = ('category', 'year',)
     search_fields = ('name',)
     empty_value_display = '-пусто-'
     inlines = [GenreTitleTabular, ]
+
+    def get_genres(self, obj):
+        return ', '.join([str(genre) for genre in obj.genre.all()])
     get_genres.short_description = 'Жанры'
 
 

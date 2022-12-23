@@ -28,7 +28,7 @@ class GenreSerializer(serializers.ModelSerializer):
 class TitleListRetrieveSerializer(serializers.ModelSerializer):
     category = CategorySerializer()
     genre = GenreSerializer(many=True)
-    rating = serializers.IntegerField(default=0)
+    rating = serializers.IntegerField(default=None)
 
     class Meta:
         model = Title
@@ -52,12 +52,10 @@ class TitleSerializer(serializers.ModelSerializer):
         many=True,
         slug_field='slug'
     )
-    rating = serializers.IntegerField(read_only=True, default=None)
 
     class Meta:
         model = Title
-        fields = ('id', 'name', 'year', 'description', 'category', 'genre',
-                  'rating')
+        fields = ('id', 'name', 'year', 'description', 'category', 'genre')
 
     def validate_year(self, value):
         if value > datetime.datetime.now().year:
@@ -117,6 +115,11 @@ class UsersSerializer(serializers.ModelSerializer):
             UnicodeUsernameValidator(),
             UniqueValidator(queryset=User.objects.all())],
     )
+    email = serializers.EmailField(
+        required=True,
+        max_length=settings.EMAIL_MAX_LENGTH,
+        validators=[UniqueValidator(queryset=User.objects.all())]
+    )
 
     class Meta:
         model = User
@@ -142,9 +145,8 @@ class SignUpSerializer(serializers.ModelSerializer, MeValidator):
         fields = ('username', 'email')
 
 
-class GetTokenSerializer(serializers.Serializer):
+class GetTokenSerializer(serializers.Serializer, MeValidator):
     confirmation_code = serializers.CharField(required=False)
     username = serializers.CharField(
         required=True,
-        validators=[UnicodeUsernameValidator()],
     )

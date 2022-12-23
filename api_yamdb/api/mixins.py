@@ -23,8 +23,8 @@ class MeValidator(
 
     def validate_username(self, value):
         if value == 'me' or '':
-            invalid_username = self.USERNAME_ME if value == 'me' \
-                else self.USERNAME_EMPTY
+            invalid_username = self.USERNAME_ME if (
+                value == 'me') else self.USERNAME_EMPTY
             raise serializers.ValidationError(detail=[invalid_username])
         result = re.findall(r'[^\w.@+-]', value)
         if result:

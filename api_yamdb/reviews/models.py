@@ -29,7 +29,9 @@ class ReviewCommentBaseModel(models.Model):
 
 
 class CategoryGenreBaseModel(models.Model):
-    name = models.CharField('Наименование', max_length=settings.NAME_MAX_LENGTH)
+    name = models.CharField(
+        'Наименование', max_length=settings.NAME_MAX_LENGTH
+    )
     slug = models.SlugField(unique=True, max_length=settings.SLUG_MAX_LENGTH)
 
     class Meta:
@@ -53,7 +55,9 @@ class Category(CategoryGenreBaseModel):
 
 
 class Title(models.Model):
-    name = models.CharField('Произведение', max_length=settings.NAME_MAX_LENGTH)
+    name = models.CharField(
+        'Произведение', max_length=settings.NAME_MAX_LENGTH
+    )
     year = models.PositiveSmallIntegerField(
         'Год выпуска',
         validators=[validate_year],

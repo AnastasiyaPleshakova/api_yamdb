@@ -130,7 +130,6 @@ class UsersSerializer(serializers.ModelSerializer):
 class SignUpSerializer(serializers.ModelSerializer, MeValidator):
     username = serializers.CharField(
         required=True,
-        validators=[UnicodeUsernameValidator(), ],
         max_length=settings.USERNAME_MAX_LENGTH,
     )
     email = serializers.EmailField(

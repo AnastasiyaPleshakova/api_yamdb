@@ -1,3 +1,5 @@
+import re
+
 from rest_framework import mixins, viewsets, filters, serializers
 
 
@@ -24,4 +26,10 @@ class MeValidator(
             invalid_username = self.USERNAME_ME if value == 'me' \
                 else self.USERNAME_EMPTY
             raise serializers.ValidationError(detail=[invalid_username])
+        result = re.findall(r'[^\w.@+-]', value)
+        if result:
+            raise serializers.ValidationError(
+                f'Некорректные символы в username:'
+                f' `{"`, `".join(set(result))}`.'
+            )
         return value

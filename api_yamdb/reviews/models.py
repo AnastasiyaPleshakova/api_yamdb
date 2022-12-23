@@ -1,7 +1,7 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.conf import settings
 from django.db import models
 
-from api_yamdb.settings import name_max_length, slug_max_length
 from reviews.validators import validate_year
 from users.models import User
 
@@ -22,19 +22,21 @@ class ReviewCommentBaseModel(models.Model):
 
     class Meta:
         abstract = True
-        ordering = ['pub_date']
+        ordering = ('pub_date',)
 
     def __str__(self):
         return self.text[:30]
 
 
 class CategoryGenreBaseModel(models.Model):
-    name = models.CharField('Наименование', max_length=name_max_length)
-    slug = models.SlugField(unique=True, max_length=slug_max_length)
+    name = models.CharField(
+        'Наименование', max_length=settings.NAME_MAX_LENGTH
+    )
+    slug = models.SlugField(unique=True, max_length=settings.SLUG_MAX_LENGTH)
 
     class Meta:
         abstract = True
-        ordering = ['name']
+        ordering = ('name',)
 
     def __str__(self):
         return self.name[:20]
@@ -53,7 +55,9 @@ class Category(CategoryGenreBaseModel):
 
 
 class Title(models.Model):
-    name = models.CharField('Произведение', max_length=name_max_length)
+    name = models.CharField(
+        'Произведение', max_length=settings.NAME_MAX_LENGTH
+    )
     year = models.PositiveSmallIntegerField(
         'Год выпуска',
         validators=[validate_year],
@@ -77,7 +81,7 @@ class Title(models.Model):
     class Meta:
         verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'
-        ordering = ['name']
+        ordering = ('name',)
 
     def __str__(self):
         return self.name[:30]
@@ -98,7 +102,7 @@ class GenreTitle(models.Model):
     class Meta:
         verbose_name = 'Произведение и жанр'
         verbose_name_plural = 'Произведения и жанры'
-        ordering = ['id']
+        ordering = ('id',)
 
     def __str__(self):
         return (

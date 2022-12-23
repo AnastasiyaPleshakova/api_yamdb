@@ -1,15 +1,15 @@
+from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
+from django.db.models import Avg
+from django.db.utils import IntegrityError
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from django.db.models import Avg
-from rest_framework import filters, permissions, status, viewsets
+from rest_framework import filters, permissions, status, viewsets, serializers
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
-from rest_framework.exceptions import ValidationError
 
-from api_yamdb.settings import from_email
 from .filters import TitleFilter
 from .mixins import CreateDestroyList
 from .permissions import (IsAdmin, IsAdminOrReadOnly,
@@ -23,15 +23,13 @@ from reviews.models import Category, Comment, Genre, Review, Title
 from users.models import User
 
 
-def get_object(self, model, object_id):
-    return get_object_or_404(model, id=self.kwargs.get(object_id))
-
-
 @permission_classes([IsAdminOrReadOnly])
 class TitleViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.all().annotate(rating=Avg("reviews__score"))
-    filter_backends = (DjangoFilterBackend,)
+    queryset = Title.objects.all().annotate(rating=Avg('reviews__score'))
+    filter_backends = (DjangoFilterBackend, filters.OrderingFilter,)
     filterset_class = TitleFilter
+    ordering_fields = ('name', 'year', 'category', 'genre', 'rating',)
+    ordering = ('name',)
 
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):
@@ -56,14 +54,15 @@ class ReviewViewSet(viewsets.ModelViewSet):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
 
+    def get_title(self):
+        return get_object_or_404(Title, id=self.kwargs.get('title_id'))
+
     def perform_create(self, serializer):
-        title = get_object(self, Title, 'title_id')
-        serializer.save(title=title,
+        serializer.save(title=self.get_title(),
                         author=self.request.user)
 
     def get_queryset(self):
-        title = get_object(self, Title, 'title_id')
-        return title.reviews.all()
+        return self.get_title().reviews.all()
 
 
 @permission_classes([IsAdminOrModeratorOrReadOnly])
@@ -71,14 +70,15 @@ class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
 
+    def get_review(self):
+        return get_object_or_404(Review, id=self.kwargs.get('review_id'))
+
     def perform_create(self, serializer):
-        review = get_object(self, Review, 'review_id')
-        serializer.save(review=review,
+        serializer.save(review=self.get_review(),
                         author=self.request.user)
 
     def get_queryset(self):
-        review = get_object(self, Review, 'review_id')
-        return review.comments.all()
+        return self.get_review().comments.all()
 
 
 @permission_classes([IsAdmin])
@@ -116,17 +116,23 @@ def signup(request):
     serializer.is_valid(raise_exception=True)
     username = serializer.validated_data['username']
     email = serializer.validated_data['email']
+    USERNAME_ERROR = 'Такой username уже занят!'
+    EMAIL_ERROR = 'Такой email уже занят!'
+
     try:
         user, created = User.objects.get_or_create(
             username=username, email=email)
-    except Exception:
-        raise ValidationError('Неправильный username или email')
+    except IntegrityError:
+        valid_error = USERNAME_ERROR if User.objects.filter(
+            username=serializer.validated_data['username']).exists() \
+            else EMAIL_ERROR
+        raise serializers.ValidationError(detail=[valid_error, ])
 
     confirmation_code = default_token_generator.make_token(user)
     send_mail(
         'Подтверждение email',
         f'Ваш код подтверждения: {confirmation_code}',
-        from_email=from_email,
+        from_email=settings.FROM_EMAIL,
         recipient_list=[serializer.validated_data['email']],
         fail_silently=True,
     )
